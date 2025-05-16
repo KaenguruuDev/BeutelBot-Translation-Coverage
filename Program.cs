@@ -54,7 +54,7 @@ class Program
 			Console.WriteLine("\n- Missing Keys -");
 		foreach (var key in notImplemented)
 			Console.WriteLine($"{key}");
-		
+
 		return notImplemented.Count;
 	}
 
@@ -99,6 +99,7 @@ class Program
 		}
 		catch (Exception ex)
 		{
+			Console.WriteLine($"Could not load translation.json: {ex.Message}");
 			return [];
 		}
 	}
