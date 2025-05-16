@@ -54,6 +54,10 @@ class Program
 			Console.WriteLine("\n- Missing Keys -");
 		foreach (var key in notImplemented)
 			Console.WriteLine($"{key}");
+		if (noPurpose.Count > 0)
+			Console.WriteLine("\n\n- Unused Keys -");
+		foreach (var unusedKey in noPurpose)
+			Console.WriteLine($"{unusedKey}");
 
 		return notImplemented.Count;
 	}
