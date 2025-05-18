@@ -70,7 +70,7 @@ class Program
 			var fileContent = File.ReadAllText(csFile);
 
 			var regexPattern =
-				"WithLocalizedTitle\\(\"([a-zA-Z._-]*)\"|WithLocalizedDescription\\(\"([a-zA-Z._-]*)\"|Translations\\.GetTranslation\\(\"([a-zA-Z._-]*)\"";
+				"WithLocalizedTitle\\(\"([a-zA-Z._-]*)\"|WithLocalizedDescription\\(\"([a-zA-Z._-]*)\"|Translations\\.GetTranslation\\(\"([a-zA-Z._-]*)\"|AddLocalizedTextInput\\(\"([a-zA-Z._-]*)\"";
 			var matches = Regex.Matches(fileContent, regexPattern);
 
 			var results = new List<string>();
@@ -78,11 +78,10 @@ class Program
 			{
 				for (int i = 1; i < match.Groups.Count; i++)
 				{
-					if (match.Groups[i].Success)
-					{
-						results.Add(match.Groups[i].Value);
-						break;
-					}
+					if (!match.Groups[i].Success) continue;
+					
+					results.Add(match.Groups[i].Value);
+					break;
 				}
 			}
 
