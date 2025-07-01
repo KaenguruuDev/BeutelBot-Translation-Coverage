@@ -1,11 +1,10 @@
 ﻿using System.Text.RegularExpressions;
-using Newtonsoft.Json;
 
 namespace TranslationCoverage;
 
-class Program
+internal class Program
 {
-	static int Main(string[] args)
+	private static int Main(string[] args)
 	{
 		var dirFiles = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.*", SearchOption.AllDirectories);
 
@@ -16,7 +15,7 @@ class Program
 		}
 
 		var csFiles = TraverseAllDirs(".cs");
-		var translationFile = TraverseAllDirs(".json").FirstOrDefault(f => f.EndsWith("translations.json"));
+		var translationFile = TraverseAllDirs(".csv").FirstOrDefault(f => f.EndsWith("translations.csv"));
 
 		if (string.IsNullOrEmpty(translationFile))
 			return 1;
@@ -69,8 +68,7 @@ class Program
 		{
 			var fileContent = File.ReadAllText(csFile);
 
-			var regexPattern =
-				"WithLocalizedTitle\\(\"([a-zA-Z._-]*)\"|WithLocalizedDescription\\(\"([a-zA-Z._-]*)\"|Translations\\.GetTranslation\\(\"([a-zA-Z._-]*)\"|AddLocalizedTextInput\\(\"([a-zA-Z._-]*)\"";
+			var regexPattern = @"";
 			var matches = Regex.Matches(fileContent, regexPattern);
 
 			var results = new List<string>();
@@ -79,7 +77,7 @@ class Program
 				for (int i = 1; i < match.Groups.Count; i++)
 				{
 					if (!match.Groups[i].Success) continue;
-					
+
 					results.Add(match.Groups[i].Value);
 					break;
 				}
@@ -95,16 +93,53 @@ class Program
 	{
 		try
 		{
-			var dict = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(
-				File.ReadAllText(translationFile)) ?? [];
+			var lines = File.ReadAllLines(translationFile);
+			if (lines.Length <= 1) return [];
 
-			return dict.Keys.ToArray();
+			var keys = new List<string>();
+			for (int i = 1; i < lines.Length; i++)
+			{
+				var line = lines[i];
+				if (string.IsNullOrWhiteSpace(line)) continue;
+
+				var columns = ParseCsvLine(line);
+				if (columns.Count > 0)
+					keys.Add(columns[0].Trim('"'));
+			}
+
+			return keys.Distinct().ToArray();
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine($"Could not load translation.json: {ex.Message}");
+			Console.WriteLine($"Could not load translations.csv: {ex.Message}");
 			return [];
 		}
+	}
+
+	private static List<string> ParseCsvLine(string line)
+	{
+		var result = new List<string>();
+		bool inQuotes = false;
+		string current = "";
+		foreach (var c in line)
+		{
+			if (c == '\"')
+			{
+				inQuotes = !inQuotes;
+				continue;
+			}
+			if (c == ',' && !inQuotes)
+			{
+				result.Add(current);
+				current = "";
+			}
+			else
+			{
+				current += c;
+			}
+		}
+		result.Add(current);
+		return result;
 	}
 
 	private static string[] TraverseAllDirs(string ending)
