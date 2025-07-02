@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using static System.Text.RegularExpressions.Regex;
 
 namespace TranslationCoverage;
 
@@ -68,8 +69,10 @@ internal class Program
 		{
 			var fileContent = File.ReadAllText(csFile);
 
-			var regexPattern = @"";
-			var matches = Regex.Matches(fileContent, regexPattern);
+			const string regexPattern = """
+			                            \"((?:[A-Z]+:)*)([A-Z_]+)\"
+			                            """;
+			var matches = Matches(fileContent, regexPattern);
 
 			var results = new List<string>();
 			foreach (Match match in matches)
